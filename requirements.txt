@@ -10,3 +10,4 @@ streamlit==0.71.0
 urllib3==1.22
 uvicorn==0.12.2
 matplotlib==3.3.3
+html5lib==1.0.1
