@@ -40,7 +40,7 @@ def company_names():
 
 # DATA_URL = "F:/Desktop/projects/Streamlit APP/data/company_list.csv"
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def load_data():
     # data = pd.read_csv(DATA_URL, nrows=nrows)
     data = company_names()
@@ -87,7 +87,9 @@ def view_company_details():
         
     return symbol_no
 
-symbol_no = view_company_details().tolist()[0]
+symbol_no = 0
+if  view_company_details() is not None:
+    symbol_no = view_company_details().tolist()[0]
 # st.write(symbol_no)
 
 st.subheader("Check Company's Progress in Years")
@@ -111,7 +113,7 @@ def CompanyStocksTransactions(SymbolNo,startDate, endDate):
     else:
       return (0, None)
 
-@st.cache    
+@st.cache(suppress_st_warning=True)    
 def view_by_year(start_date="2020-1-1", end_date="2020-1-2", symbol="2810"):
     # startDate = 2000 + year
     # startDate = str(startDate) + '-1-1'
@@ -135,7 +137,7 @@ show_df = st.checkbox("Show Data")
 if show_df:
     st.write(dfyear)
 #st.write(dfyear.columns)
-@st.cache
+@st.cache(suppress_st_warning=True)
 def load_data():
     dfyear = pd.read_csv("F:/Desktop/projects/Streamlit APP/data/NEPSE131.csv") 
     dfyear=dfyear.iloc[20000:30000]
