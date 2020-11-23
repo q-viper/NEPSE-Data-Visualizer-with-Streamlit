@@ -80,16 +80,15 @@ def view_company_details():
         soup = BS(response, "lxml")
         table = soup.find("table")
         
-        txt=""
         for row in table.findAll("tr")[4:]:
             col = row.findAll("td")
             st.write(col[0].string,": ",col[1].string)
         
     return symbol_no
 
-symbol_no = 0
-if  view_company_details() is not None:
-    symbol_no = view_company_details().tolist()[0]
+symbol_no = view_company_details()
+if  symbol_no is not None:
+    symbol_no = symbol_no.tolist()[0]
 # st.write(symbol_no)
 
 st.subheader("Check Company's Progress in Years")
@@ -125,7 +124,7 @@ def view_by_year(start_date="2020-1-1", end_date="2020-1-2", symbol="2810"):
     success, dftest=CompanyStocksTransactions(symbol, start_date, end_date)
     if success==1:
         st.write("Successfully scrapped data. Showing results.")
-        st.write(dftest)
+        # st.write(dftest)
     else:
         st.write("Can't scrap data. Try using another symbol. Or Another date.")
     return dftest
@@ -137,7 +136,7 @@ show_df = st.checkbox("Show Data")
 if show_df:
     st.write(dfyear)
 #st.write(dfyear.columns)
-@st.cache(suppress_st_warning=True)
+@st.cache
 def load_data():
     dfyear = pd.read_csv("F:/Desktop/projects/Streamlit APP/data/NEPSE131.csv") 
     dfyear=dfyear.iloc[20000:30000]
