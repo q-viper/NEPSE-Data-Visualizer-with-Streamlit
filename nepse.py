@@ -93,32 +93,61 @@ if  symbol_no is not None:
 
 st.subheader("Check Company's Progress in Years")
 def CompanyStocksTransactions(SymbolNo,startDate, endDate):
-    url="http://www.nepalstock.com.np/company/transactions/%s/0/?startDate=%s&endDate=%s&_limit=9000000"%(SymbolNo,startDate, endDate)
-    #print("Connecting to %s "%url)
-    http = urllib3.PoolManager()
-    http.addheaders = [('User-agent', 'Mozilla/61.0')]
-    web_page = http.request('GET',url)
-    #print("Adding to DataFrame")
-    soup = BS(web_page.data, 'html5lib')
-    table = soup.find('table')
-    FloorSheet=[]
-    rows = [row.findAll('td') for row in table.findAll('tr')[1:-2]]
-    for row in rows:
-      FloorSheet.append([data.text.strip() for data in row])
-    if(len(FloorSheet) != 0):
-      FloorSheetdf = pd.DataFrame(FloorSheet[1:],columns=FloorSheet[0])
-      FloorSheetdf['Date']=pd.to_datetime(FloorSheetdf['Contract No'], format='%Y%m%d%H%M%f', errors='ignore')
-      return (1, FloorSheetdf)
-    else:
-      return (0, None)
+    FloorSheet = []
+    limit=20000
+    page_no = 1   
+    header = []
 
+    while True:
+        http = urllib3.PoolManager()
+        http.addheaders = [('User-agent', 'Mozilla/61.0')]
+        url = "http://www.nepalstock.com.np/company/transactions/%s/%s/?startDate=%s&endDate=%s&_limit=%s"%(SymbolNo,page_no,
+                                                                                                            startDate,endDate,
+                                                                                                         limit)
+        print("Current URL: ", url)
+
+        web_page = http.request('GET',url)
+        soup = BS(web_page.data, 'html5lib')
+        table = soup.find('table')
+        rows = [row.findAll('td') for row in table.findAll('tr')[1:-2]]
+        
+        print(f"Found {len(rows)} rows.")
+        if len(rows)>= 1:
+            if len(header)==0:
+                header = [data.text.strip() for data in rows[0]]
+                rows = rows[1:]
+            else:
+                rows=rows[1:]
+            for row in rows:
+                rd = [data.text.strip() for data in row]
+                FloorSheet.append(rd)
+            #print(rd[1])
+            print("")
+
+        else:
+            break
+        if len(rows)+1!=limit:
+            print("Full")
+            break
+        else:
+            page_no+=1
+
+
+    # FloorSheet.insert(0, header) 
+    if(len(FloorSheet) != 0):
+        FloorSheetdf = pd.DataFrame(FloorSheet[1:],columns=header)
+        FloorSheetdf['Date']=pd.to_datetime(FloorSheetdf['Contract No'], format='%Y%m%d%H%M%f', errors='ignore')
+        
+        return (1, FloorSheetdf)
+    else:
+        return (0, None)
 @st.cache(suppress_st_warning=True)    
 def view_by_year(start_date="2020-1-1", end_date="2020-1-2", symbol="2810"):
     # startDate = 2000 + year
     # startDate = str(startDate) + '-1-1'
     # endDate = 2000 + year
     # endDate = str(endDate) + '-12-31'
-    st.write("From year %s to %s "%(start_date, end_date))
+    st.write("From year %s to %s. Please wait few minutes."%(start_date, end_date))
     
     time1 = time.time()
     success, dftest=CompanyStocksTransactions(symbol, start_date, end_date)
@@ -148,8 +177,6 @@ def load_data():
     return dfyear
 
 
-
-
 date_vs_bbroker = st.checkbox("Date Vs Buyer Broker")
 date_vs_sbroker = st.checkbox("Date Vs Seller Broker")
 date_vs_amount = st.checkbox("Date vs Amount")
@@ -157,6 +184,8 @@ date_vs_rate = st.checkbox("Date vs Rate")
 
 
 # dfyear = load_data()
+
+
 def visualise_broker():
     # hist_values = np.histogram(dfyear["Date"].dt.day, bins=10, range=(0,10))[0]
     # st.bar_chart(dfyear.Date)
