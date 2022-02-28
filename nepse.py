@@ -11,9 +11,10 @@ import plotly.express as px
 def company_names():
     http = urllib3.PoolManager()
     http.addheaders = [('User-agent', 'Mozilla/61.0')]
-    web_page = http.request('GET', "http://www.nepalstock.com.np/company?_limit=500")
+    web_page = http.request('GET', "http://www.nepalstock.com/company?_limit=500")
     soup = BS(web_page.data, 'html5lib')
     table = soup.find('table')
+    #st.write(web_page.data)
     company=[]
     rows = [row.findAll('td') for row in table.findAll('tr')[1:-2]]
     col = 0
@@ -38,11 +39,11 @@ def company_names():
     return df
     #df.to_csv('CompanyList.csv', encoding='utf-8', index=False) 
 
-# DATA_URL = "F:/Desktop/projects/Streamlit APP/data/company_list.csv"
+# DATA_URL = "F:/Desktop/projects/NEPSE Streamlit APP/data/company_list.csv"
 
 @st.cache(suppress_st_warning=True)
 def load_data():
-    # data = pd.read_csv(DATA_URL, nrows=nrows)
+    # data = pd.read_csv(DATA_URL)
     data = company_names()
     
     lowercase = lambda x: str(x).lower()
@@ -51,7 +52,7 @@ def load_data():
 
 st.subheader("View the list of Companies.")
 def view_company_names():
-    st.markdown("(Base URL is [http://www.nepalstock.com.np/company?_limit=500](http://www.nepalstock.com.np/company?_limit=500))")
+    st.markdown("(Base URL is [http://www.nepalstock.com/company?_limit=500](http://www.nepalstock.com/company?_limit=500))")
     num = st.number_input("Enter how many records to view?", min_value=1, max_value=None, step=1)
     data_load_state = st.text('Loading data...')
     data = load_data()
@@ -101,10 +102,11 @@ def CompanyStocksTransactions(SymbolNo,startDate, endDate):
     while True:
         http = urllib3.PoolManager()
         http.addheaders = [('User-agent', 'Mozilla/61.0')]
-        url = "http://www.nepalstock.com.np/company/transactions/%s/%s/?startDate=%s&endDate=%s&_limit=%s"%(SymbolNo,page_no,
-                                                                                                            startDate,endDate,
+        # url = "http://www.nepalstock.com.np/company/transactions/%s/%s/?startDate=%s&endDate=%s&_limit=%s"%(SymbolNo,page_no,
+        url = "http://www.nepalstock.com/company/transactions/%s/%s/?startDate=%s&endDate=%s&_limit=%s"%(SymbolNo,page_no,
+                                                                                                          startDate,endDate,
                                                                                                          limit)
-        print("Current URL: ", url)
+        st.write("Current URL: ", url)
 
         web_page = http.request('GET',url)
         soup = BS(web_page.data, 'html5lib')
